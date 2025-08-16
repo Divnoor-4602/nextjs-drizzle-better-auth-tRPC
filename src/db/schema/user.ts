@@ -1,11 +1,13 @@
 import { InferSelectModel, relations, sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { post } from "./post";
-import z from "zod";
+import { z } from "zod";
 import { createInsertSchema } from "drizzle-zod";
 
 export const user = sqliteTable("user", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$default(() => crypto.randomUUID()),
   fullName: text("full_name").notNull(),
   age: integer("age").notNull(),
   email: text("email").notNull(),

@@ -2,6 +2,8 @@ import { primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { post } from "./post";
 import { tag } from "./tag";
 import { relations } from "drizzle-orm";
+import { createInsertSchema } from "drizzle-zod";
+import z from "zod";
 
 export const postTag = sqliteTable(
   "post_tag",
@@ -23,3 +25,6 @@ export const postTagRelations = relations(postTag, ({ one }) => ({
   }),
 }));
 // one to one relation between tag and post
+
+const postTagSchema = createInsertSchema(postTag);
+export type PostTagSchema = z.infer<typeof postTagSchema>;

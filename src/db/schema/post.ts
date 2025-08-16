@@ -4,10 +4,12 @@ import { category } from "./category";
 import { InferSelectModel, relations, sql } from "drizzle-orm";
 import { postTag } from "./postTag";
 import { createInsertSchema } from "drizzle-zod";
-import z from "zod/v4";
+import { z } from "zod";
 
 export const post = sqliteTable("post", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$default(() => crypto.randomUUID()),
   userId: text("user_id")
     .notNull()
     .references(() => user.id), // foreign key referencing the user table

@@ -1,5 +1,6 @@
-export { user } from "./user";
-export { category } from "./category";
-export { post } from "./post";
-export { comment } from "./comment";
-export { tag } from "./tag";
+export { user, userRelations } from "./user";
+export { category, categoryRelations } from "./category";
+export { post, postRelations } from "./post";
+export { comment, commentRelations } from "./comment";
+export { tag, tagRelations } from "./tag";
+export { postTag, postTagRelations } from "./postTag";

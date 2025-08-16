@@ -3,10 +3,12 @@ import { post } from "./post";
 import { user } from "./user";
 import { relations, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
-import z from "zod/v4";
+import { z } from "zod";
 
 export const comment = sqliteTable("comment", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$default(() => crypto.randomUUID()),
   parentId: text("parent_id"), // foreign key referencing the comment table
   userId: text("user_id")
     .notNull()
