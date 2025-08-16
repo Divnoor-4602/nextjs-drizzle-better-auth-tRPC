@@ -1,21 +1,21 @@
 "use client";
-import { LogOut } from "lucide-react";
+
 import { useRouter } from "next/navigation";
 
-import { signOut } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 
 export function SignOut() {
-	const router = useRouter();
+  const router = useRouter();
 
-	async function handleSignOutClick() {
-		await signOut();
-		router.push("/sign-in");
-	}
+  async function handleSignOut() {
+    // TODO: Replace with better-auth sign out
+    // await auth.signOut();
+    router.push("/");
+  }
 
-	return (
-		<Button size="icon" variant="ghost" onClick={handleSignOutClick}>
-			<LogOut className="h-4 w-4 text-destructive" />
-		</Button>
-	);
+  return (
+    <Button onClick={handleSignOut} variant="ghost">
+      Sign Out
+    </Button>
+  );
 }

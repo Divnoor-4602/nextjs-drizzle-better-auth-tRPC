@@ -1,0 +1,29 @@
+services:
+  # SQLite development environment
+  sqlite-dev:
+    container_name: sqlite-dev
+    image: alpine:latest
+    command: sh -c "apk add --no-cache sqlite && tail -f /dev/null"
+    volumes:
+      - ./sqlite.db:/app/sqlite.db
+      - ./src:/app/src
+      - ./drizzle:/app/drizzle
+    working_dir: /app
+    ports:
+      - "3000:3000" # For your Next.js app if you want to run it in Docker too
+
+  # Optional: SQLite browser for database inspection
+  sqlite-browser:
+    container_name: sqlite-browser
+    image: coleifer/sqlite-web:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./sqlite.db:/data/sqlite.db
+    environment:
+      - SQLITE_DATABASE: /data/sqlite.db
+    depends_on:
+      - sqlite-dev
+
+volumes:
+  # No persistent volumes needed for SQLite
