@@ -1,6 +1,8 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "./user";
 import { category } from "./category";
+import { relations } from "drizzle-orm";
+import { postTag } from "./postTag";
 
 export const post = sqliteTable("post", {
   id: text("id").primaryKey(),
@@ -16,3 +18,15 @@ export const post = sqliteTable("post", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
+
+export const postRelations = relations(post, ({ one, many }) => ({
+  user: one(user, {
+    fields: [post.userId],
+    references: [user.id],
+  }),
+  tags: many(postTag),
+  category: one(category, {
+    fields: [post.categoryId],
+    references: [category.id],
+  }),
+}));
