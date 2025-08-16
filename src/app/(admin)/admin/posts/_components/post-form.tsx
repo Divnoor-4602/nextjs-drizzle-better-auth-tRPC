@@ -12,20 +12,23 @@ import SelectBox from "@/components/form-controllers/select-box";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
+import { postSchema, PostSchema } from "@/db/schema/post";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type Props = {
-  defaultValues: any;
+  defaultValues: PostSchema;
   categoriesData: { id: number; name: string }[] | null;
   tagsData: { id: number; name: string }[] | null;
 };
 export function PostForm({ defaultValues, categoriesData, tagsData }: Props) {
   const router = useRouter();
 
-  const form = useForm<any>({
+  const form = useForm<PostSchema>({
+    resolver: zodResolver(postSchema),
     defaultValues,
   });
 
-  const onSubmit: SubmitHandler<any> = async (data) => {
+  const onSubmit: SubmitHandler<PostSchema> = async (data) => {
     let response;
     if (data.mode === "create") {
       response = await createPost(data);

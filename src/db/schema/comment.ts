@@ -1,9 +1,9 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { post } from "./post";
 import { user } from "./user";
-import { InferInsertModel, relations, sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
-import z from "zod";
+import z from "zod/v4";
 
 export const comment = sqliteTable("comment", {
   id: text("id").primaryKey(),
@@ -47,4 +47,4 @@ export const commentSchema = createInsertSchema(comment, {
   userId: true,
   id: true,
 });
-export type CommentSchema = z.infer<typeof comment>;
+export type CommentSchema = z.infer<typeof commentSchema>;

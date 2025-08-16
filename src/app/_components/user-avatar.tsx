@@ -1,13 +1,10 @@
 import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SelectUserModel } from "@/db/schema/user";
 
 type UserAvatarProps = {
-  data: {
-    id: number;
-    fullName: string;
-    email?: string;
-  };
+  data: Pick<SelectUserModel, "id" | "fullName">;
   href?: string;
 };
 

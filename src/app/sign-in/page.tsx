@@ -4,16 +4,6 @@ import { UserForm } from "@/app/_components/user-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function SignInPage() {
-  async function handleSignIn(data: {
-    fullName: string;
-    email: string;
-    age: number;
-  }) {
-    // TODO: Replace with better-auth sign in
-    // await auth.signIn(data);
-    console.log("Sign in data:", data);
-  }
-
   return (
     <div className="container max-w-md mx-auto py-10">
       <Card>
@@ -22,9 +12,7 @@ export default function SignInPage() {
         </CardHeader>
         <CardContent>
           <UserForm
-            onSubmit={handleSignIn}
-            submitLabel="Sign In"
-            defaultValues={{ fullName: "", email: "", age: 18 }}
+            defaultValues={{ mode: "signIn", email: "" }}
           />
         </CardContent>
       </Card>

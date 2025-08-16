@@ -14,14 +14,17 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
+import { commentSchema, CommentSchema } from "@/db/schema/comment";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-type Props = { defaultValues: any };
+type Props = { defaultValues: CommentSchema };
 export function CommentReplyForm({ defaultValues }: Props) {
-  const form = useForm<any>({
+  const form = useForm<CommentSchema>({
+    resolver: zodResolver(commentSchema),
     defaultValues,
   });
 
-  const onSubmit: SubmitHandler<any> = async (data) => {
+  const onSubmit: SubmitHandler<CommentSchema> = async (data) => {
     const response = await createComment(data);
     toast({
       title: response.message,
