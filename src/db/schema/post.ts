@@ -1,8 +1,10 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "./user";
 import { category } from "./category";
-import { relations } from "drizzle-orm";
+import { InferSelectModel, relations, sql } from "drizzle-orm";
 import { postTag } from "./postTag";
+import { createInsertSchema } from "drizzle-zod";
+import z from "zod/v4";
 
 export const post = sqliteTable("post", {
   id: text("id").primaryKey(),
@@ -15,8 +17,12 @@ export const post = sqliteTable("post", {
   categoryId: text("category_id")
     .notNull()
     .references(() => category.id), // foreign key referencing the category table
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(current_timestamp)`),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(current_timestamp)`),
 });
 
 export const postRelations = relations(post, ({ one, many }) => ({
@@ -30,3 +36,43 @@ export const postRelations = relations(post, ({ one, many }) => ({
     references: [category.id],
   }),
 }));
+
+// zod schema
+// the base schema using pick excludes any other post such as createdAt and updatedAt
+const baseSchema = createInsertSchema(post, {
+  title: (schema) => schema.min(1),
+  shortDescription: (schema) => schema.min(1).max(255),
+  userId: (schema) => schema.min(1),
+  categoryId: (schema) => schema.min(1),
+}).pick({
+  title: true,
+  shortDescription: true,
+  userId: true,
+  categoryId: true,
+  content: true,
+});
+
+export const postSchema = z.union([
+  z.object({
+    mode: z.literal("create"),
+    title: baseSchema.shape.title,
+    shortDescription: baseSchema.shape.shortDescription,
+    userId: baseSchema.shape.userId,
+    categoryId: baseSchema.shape.categoryId,
+    content: baseSchema.shape.content,
+    tagIds: z.array(z.number()),
+  }),
+  z.object({
+    mode: z.literal("edit"),
+    id: z.string().min(1),
+    title: baseSchema.shape.title,
+    shortDescription: baseSchema.shape.shortDescription,
+    userId: baseSchema.shape.userId,
+    categoryId: baseSchema.shape.categoryId,
+    content: baseSchema.shape.content,
+    tagIds: z.array(z.number()),
+  }),
+]);
+
+export type PostSchema = z.infer<typeof postSchema>;
+export type SelectPostModel = InferSelectModel<typeof post>;
