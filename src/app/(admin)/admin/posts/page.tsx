@@ -1,12 +1,9 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { getAdminPosts } from "../queries";
-import { PostsTable } from "../_components/posts-table";
+import { PostsTable } from "./_components/post-table";
 
-export default async function AdminPostsPage() {
-  const posts = await getAdminPosts();
-
+export default function AdminPostsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -16,7 +13,7 @@ export default async function AdminPostsPage() {
         </Button>
       </div>
 
-      <PostsTable posts={posts} />
+      <PostsTable />
     </div>
   );
 }

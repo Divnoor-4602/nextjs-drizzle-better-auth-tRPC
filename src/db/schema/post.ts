@@ -64,7 +64,7 @@ export const postSchema = z.union([
     userId: baseSchema.shape.userId,
     categoryId: baseSchema.shape.categoryId,
     content: baseSchema.shape.content,
-    tagIds: z.array(z.number()),
+    tagIds: z.array(z.string()),
   }),
   z.object({
     mode: z.literal("edit"),
@@ -74,7 +74,7 @@ export const postSchema = z.union([
     userId: baseSchema.shape.userId,
     categoryId: baseSchema.shape.categoryId,
     content: baseSchema.shape.content,
-    tagIds: z.array(z.number()),
+    tagIds: z.array(z.string()),
   }),
 ]);
 

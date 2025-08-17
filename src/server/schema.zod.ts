@@ -42,6 +42,10 @@ export const getPostsbyCategoryIdSchema = z.object({
   categoryId: z.string().min(1),
 });
 
+export const deletePostByIdSchema = z.object({
+  id: z.string().min(1),
+});
+
 export type GetRelatedPostsByCategoryIdSchema = z.infer<
   typeof getRelatedPostsByCategoryIdSchema
 >;

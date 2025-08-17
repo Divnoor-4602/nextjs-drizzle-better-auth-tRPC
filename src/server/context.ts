@@ -5,6 +5,7 @@ import { db } from "@/db";
 export type TContext = {
   session: Awaited<ReturnType<typeof auth.api.getSession>> | null;
   db: typeof db;
+  auth: typeof auth;
 };
 
 // Create context function
@@ -16,11 +17,13 @@ export const createContext = async (req: Request): Promise<TContext> => {
     return {
       session,
       db,
+      auth,
     };
   } catch (error) {
     return {
       session: null,
       db,
+      auth,
     };
   }
 };
