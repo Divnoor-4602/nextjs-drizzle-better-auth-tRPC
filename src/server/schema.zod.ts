@@ -32,6 +32,16 @@ export const getPostByIdSchema = z.object({
   id: z.string().min(1),
 });
 
+export const getCategoryPostsCountSchema = z.object({
+  categoryId: z.string().min(1),
+});
+
+export const getPostsbyCategoryIdSchema = z.object({
+  limit: z.number().min(1),
+  page: z.number().min(1),
+  categoryId: z.string().min(1),
+});
+
 export type GetRelatedPostsByCategoryIdSchema = z.infer<
   typeof getRelatedPostsByCategoryIdSchema
 >;

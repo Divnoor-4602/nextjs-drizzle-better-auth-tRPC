@@ -3,7 +3,9 @@ import { authRouter } from "./routers/auth";
 import { publicProcedure, protectedProcedure, router } from "./trpc";
 import { post, user } from "@/db";
 import {
+  getCategoryPostsCountSchema,
   getPostByIdSchema,
+  getPostsbyCategoryIdSchema,
   getPostsCountSchema,
   getPostsSchema,
   getRelatedPostsByCategoryIdSchema,
@@ -146,6 +148,43 @@ export const appRouter = router({
       });
 
       return postById;
+    }),
+
+  /***
+   * get a post count for a particular category
+   */
+  getCategoryPostsCount: publicProcedure
+    .input(getCategoryPostsCountSchema)
+    .query(async ({ ctx, input }) => {
+      const { categoryId } = input;
+      const postCount = await ctx.db
+        .select({ count: count() })
+        .from(post)
+        .where(eq(post.categoryId, categoryId))
+        .then((res) => res[0].count);
+      return postCount;
+    }),
+
+  /***
+   * get posts by category id
+   */
+  getPostsByCategoryId: publicProcedure
+    .input(getPostsbyCategoryIdSchema)
+    .query(async ({ ctx, input }) => {
+      const { limit, page, categoryId } = input;
+      const posts = await ctx.db.query.post.findMany({
+        columns: {
+          id: true,
+          title: true,
+          shortDescription: true,
+          updatedAt: true,
+        },
+        limit,
+        offset: page * limit,
+        orderBy: desc(post.createdAt),
+        where: eq(post.categoryId, categoryId),
+      });
+      return posts;
     }),
 
   // Protected procedures
