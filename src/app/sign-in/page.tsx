@@ -12,7 +12,7 @@ export default function SignInPage() {
         </CardHeader>
         <CardContent>
           <UserForm
-            defaultValues={{ mode: "signIn", email: "" }}
+            defaultValues={{ mode: "signIn", email: "", password: "" }}
           />
         </CardContent>
       </Card>

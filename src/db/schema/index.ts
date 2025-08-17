@@ -1,4 +1,4 @@
-export { user, userRelations } from "./user";
+export { user, userRelations, session, account, verification } from "./user";
 export { category, categoryRelations } from "./category";
 export { post, postRelations } from "./post";
 export { comment, commentRelations } from "./comment";

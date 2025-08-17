@@ -12,12 +12,12 @@ export default function SignUpPage() {
         </CardHeader>
         <CardContent>
           <UserForm
-            defaultValues={{ 
-              mode: "signUp", 
-              email: "", 
-              fullName: "", 
-              password: "", 
-              age: 18 
+            defaultValues={{
+              mode: "signUp",
+              email: "",
+              name: "",
+              password: "",
+              age: 18,
             }}
           />
         </CardContent>

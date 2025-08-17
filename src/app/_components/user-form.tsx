@@ -1,60 +1,161 @@
 "use client";
 
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
 
 import { updateUser } from "@/app/(admin)/admin/actions";
 import { Input } from "@/components/form-controllers/input";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { toast } from "@/lib/utils";
-import { userSchema, UserSchema } from "@/db/schema/user";
-import { signIn } from "../sign-in/actions";
-import { signUp } from "../sign-up/actions";
+import { UserSchema } from "@/db/schema/user";
+import { useSignIn } from "../sign-in/actions";
+import { useSignUp } from "../sign-up/actions";
+
+// Define response types for actions
+type ActionResponse =
+  | { success: true; message: string; user?: any; redirect?: string }
+  | { success: false; message: string };
 
 type Props = {
   defaultValues: UserSchema;
 };
 
+// Create mode-specific schemas to avoid union schema validation issues
+const signUpSchema = z.object({
+  mode: z.literal("signUp"),
+  email: z.string().email("Please enter a valid email"),
+  name: z.string().min(1, "Name is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  age: z
+    .number()
+    .min(18, "Age must be at least 18")
+    .max(99, "Age must be less than 100")
+    .optional(),
+});
+
+const signInSchema = z.object({
+  mode: z.literal("signIn"),
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(1, "Password is required"),
+});
+
+const updateSchema = z.object({
+  mode: z.literal("update"),
+  name: z.string().min(1, "Name is required"),
+  age: z
+    .number()
+    .min(18, "Age must be at least 18")
+    .max(99, "Age must be less than 100")
+    .optional(),
+  id: z.string().min(1, "User ID is required"),
+});
+
+// Function to get the appropriate schema based on mode
+const getSchemaForMode = (mode: string) => {
+  switch (mode) {
+    case "signUp":
+      return signUpSchema;
+    case "signIn":
+      return signInSchema;
+    case "update":
+      return updateSchema;
+    default:
+      return z.object({ mode: z.string() }); // Fallback schema
+  }
+};
+
 export function UserForm({ defaultValues }: Props) {
   const form = useForm<UserSchema>({
-    resolver: zodResolver(userSchema),
     defaultValues,
+    mode: "onBlur", // Validate on blur to avoid constant validation during typing
   });
+  const router = useRouter();
+
+  // Call the hooks at the component level
+  const signInHook = useSignIn();
+  const signUpHook = useSignUp();
 
   const mode = useWatch({ control: form.control, name: "mode" });
 
   const onSubmit: SubmitHandler<UserSchema> = async (data) => {
-    let response;
+    // Clear any existing errors
+    form.clearErrors();
 
-    switch (data.mode) {
-      case "update":
-        response = await updateUser(data);
-        break;
-      case "signUp":
-        response = await signUp(data);
-        break;
-      case "signIn":
-        response = await signIn(data);
-        break;
+    try {
+      // Validate the data with the appropriate schema before submission
+      const schema = getSchemaForMode(data.mode);
+      const validationResult = schema.safeParse(data);
+
+      if (!validationResult.success) {
+        // Handle validation errors by setting them on the form
+        validationResult.error.issues.forEach((err: z.ZodIssue) => {
+          const fieldName = err.path.join(".") as keyof UserSchema;
+          form.setError(fieldName, {
+            type: "validation",
+            message: err.message,
+          });
+        });
+        toast({ error: "Please fix the validation errors above." });
+        return;
+      }
+
+      const validatedData = validationResult.data;
+      let response: ActionResponse | undefined;
+
+      switch (validatedData.mode) {
+        case "update":
+          response = await updateUser(
+            validatedData as Extract<UserSchema, { mode: "update" }>
+          );
+          break;
+        case "signUp":
+          response = await signUpHook.signUp(
+            validatedData as Extract<UserSchema, { mode: "signUp" }>
+          );
+          break;
+        case "signIn":
+          response = await signInHook.signIn(
+            validatedData as Extract<UserSchema, { mode: "signIn" }>
+          );
+          break;
+      }
+
+      if (response) {
+        toast(response);
+
+        // Handle redirect if provided
+        if (response.success && response.redirect) {
+          router.push(response.redirect);
+        }
+      }
+    } catch (error) {
+      // Handle any unexpected errors (not validation errors)
+      console.error("Form submission error:", error);
+      toast({ error: "An unexpected error occurred. Please try again." });
     }
+  };
 
-    toast(response);
+  // Handle form submission errors
+  const onError = (errors: any) => {
+    console.log("Form validation errors:", errors);
+    // The errors will be automatically displayed by the FormMessage components
   };
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(onSubmit, onError)}
         className="max-w-96 space-y-6"
       >
         {(mode === "signUp" || mode === "update") && (
           <>
-            <Input control={form.control} name="fullName" label="Full Name" />
+            <Input control={form.control} name="name" label="Name" />
             <Input
               control={form.control}
               name="age"
-              label="Age"
+              label="Age (optional)"
               type="number"
             />
           </>
@@ -68,14 +169,12 @@ export function UserForm({ defaultValues }: Props) {
               label="Email"
               type="email"
             />
-            {mode === "signUp" && (
-              <Input
-                control={form.control}
-                name="password"
-                label="Password"
-                type="password"
-              />
-            )}
+            <Input
+              control={form.control}
+              name="password"
+              label="Password"
+              type="password"
+            />
           </>
         )}
 
