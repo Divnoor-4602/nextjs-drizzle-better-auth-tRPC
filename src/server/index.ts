@@ -1,9 +1,16 @@
-import { eq } from "drizzle-orm";
+import { count, desc, eq, ilike } from "drizzle-orm";
 import { authRouter } from "./routers/auth";
 import { publicProcedure, protectedProcedure, router } from "./trpc";
-import { post } from "@/db";
-import { getRelatedPostsByCategoryIdSchema } from "./schema.zod";
-import { getPostsCount } from "@/app/queries";
+import { post, user } from "@/db";
+import {
+  getPostsCountSchema,
+  getPostsSchema,
+  getRelatedPostsByCategoryIdSchema,
+  getUserPostsCountSchema,
+  getUserPostsSchema,
+  getUserSchema,
+} from "./schema.zod";
+import { PostSchema } from "@/db/schema/post";
 
 export const appRouter = router({
   auth: authRouter,
@@ -44,9 +51,78 @@ export const appRouter = router({
       return posts;
     }),
   /***
-   * get the post cound
+   * get the post count
    */
-  getPostsCount: publicProcedure.input().query(({}) => {}),
+  getPostsCount: publicProcedure
+    .input(getPostsCountSchema)
+    .query(async ({ ctx, input }) => {
+      const posts = await ctx.db
+        .select({ count: count() })
+        .from(post)
+        .where(ilike(post.title, `${input.searchTerm || ""}`))
+        .then((res) => res[0].count);
+      return posts;
+    }),
+  /***
+   * get all the posts
+   */
+  getPosts: publicProcedure
+    .input(getPostsSchema)
+    .query(async ({ ctx, input }) => {
+      const { page, limit, searchTerm } = input;
+      const posts = await ctx.db.query.post.findMany({
+        limit,
+        offset: page * limit,
+        where: ilike(post.title, `${searchTerm || ""}`),
+        orderBy: desc(post.createdAt),
+      });
+
+      return posts;
+    }),
+  /***
+   * Get user posts count
+   */
+  getUserPostsCount: publicProcedure
+    .input(getUserPostsCountSchema)
+    .query(async ({ ctx, input }) => {
+      const { userId } = input;
+      const userPostCount = await ctx.db
+        .select({ count: count() })
+        .from(post)
+        .where(eq(post.userId, userId))
+        .then((res) => res[0].count);
+
+      return userPostCount;
+    }),
+  /***
+   * get posts made by a user
+   */
+  getUserPosts: publicProcedure
+    .input(getUserPostsSchema)
+    .query(async ({ ctx, input }) => {
+      const { limit, page, userId } = input;
+      const userPosts = await ctx.db.query.post.findMany({
+        limit,
+        where: ilike(post.userId, userId),
+        offset: page * limit,
+        orderBy: desc(post.createdAt),
+      });
+      return userPosts;
+    }),
+  /**
+   * get a user
+   */
+  getUser: publicProcedure
+    .input(getUserSchema)
+    .query(async ({ ctx, input }) => {
+      const { userId } = input;
+      const getUser = await ctx.db.query.user.findFirst({
+        columns: { id: true, name: true, email: true },
+        where: eq(user.id, userId),
+      });
+
+      return getUser;
+    }),
 });
 
 export type AppRouter = typeof appRouter;
