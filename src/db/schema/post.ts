@@ -5,6 +5,7 @@ import { InferSelectModel, relations, sql } from "drizzle-orm";
 import { postTag } from "./postTag";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { comment } from "./comment";
 
 export const post = sqliteTable("post", {
   id: text("id")
@@ -37,6 +38,7 @@ export const postRelations = relations(post, ({ one, many }) => ({
     fields: [post.categoryId],
     references: [category.id],
   }),
+  comment: many(comment),
 }));
 
 // zod schema

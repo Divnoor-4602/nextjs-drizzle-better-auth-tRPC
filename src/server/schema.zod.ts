@@ -28,6 +28,10 @@ export const getUserSchema = z.object({
   userId: z.string().min(1),
 });
 
+export const getPostByIdSchema = z.object({
+  id: z.string().min(1),
+});
+
 export type GetRelatedPostsByCategoryIdSchema = z.infer<
   typeof getRelatedPostsByCategoryIdSchema
 >;
@@ -37,3 +41,5 @@ export type GetPostsCountSchema = z.infer<typeof getPostsCountSchema>;
 export type GetPostsSchema = z.infer<typeof getPostsSchema>;
 
 export type GetUserPostsSchema = z.infer<typeof getUserPostsSchema>;
+
+export type GetPostByIdSchema = z.infer<typeof getPostByIdSchema>;

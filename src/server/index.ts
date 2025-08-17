@@ -3,6 +3,7 @@ import { authRouter } from "./routers/auth";
 import { publicProcedure, protectedProcedure, router } from "./trpc";
 import { post, user } from "@/db";
 import {
+  getPostByIdSchema,
   getPostsCountSchema,
   getPostsSchema,
   getRelatedPostsByCategoryIdSchema,
@@ -10,11 +11,10 @@ import {
   getUserPostsSchema,
   getUserSchema,
 } from "./schema.zod";
-import { PostSchema } from "@/db/schema/post";
+import { comment, commentSchema } from "@/db/schema/comment";
 
 export const appRouter = router({
   auth: authRouter,
-
   // Public Procedures
 
   /***
@@ -103,7 +103,7 @@ export const appRouter = router({
       const { limit, page, userId } = input;
       const userPosts = await ctx.db.query.post.findMany({
         limit,
-        where: ilike(post.userId, userId),
+        where: eq(post.userId, userId),
         offset: page * limit,
         orderBy: desc(post.createdAt),
       });
@@ -122,6 +122,42 @@ export const appRouter = router({
       });
 
       return getUser;
+    }),
+  /***
+   * Get a post by id
+   */
+  getPostById: publicProcedure
+    .input(getPostByIdSchema)
+    .query(async ({ ctx, input }) => {
+      const { id } = input;
+      const postById = await ctx.db.query.post.findFirst({
+        where: eq(post.id, id),
+        with: {
+          category: true,
+          user: {
+            columns: { id: true, name: true },
+          },
+          comment: {
+            with: {
+              user: true,
+            },
+          },
+        },
+      });
+
+      return postById;
+    }),
+
+  // Protected procedures
+  /**
+   * create a comment
+   */
+  createComment: protectedProcedure
+    .input(commentSchema)
+    .mutation(async ({ ctx, input }) => {
+      // tRPC runs zod, so no need to zod.safeParse again
+      await ctx.db.insert(comment).values(input);
+      return { success: "comment created successfully!" };
     }),
 });
 
