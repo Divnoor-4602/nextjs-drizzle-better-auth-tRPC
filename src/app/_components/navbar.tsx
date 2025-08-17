@@ -1,12 +1,21 @@
+"use client";
+
 import Link from "next/link";
 
 import { Search } from "@/app/(public)/search/_components/search";
 import { AuthUserAvatar } from "@/app/_components/auth-user-avatar";
-import { getCategories } from "@/app/queries";
 import { Button } from "@/components/ui/button";
+import { trpc } from "../_trpc/client";
 
-export async function Navbar() {
-  const categoriesData = (await getCategories()) || [];
+export function Navbar() {
+  const {
+    data: categoriesData,
+    isLoading,
+    error,
+  } = trpc.getCategories.useQuery();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading categories</div>;
 
   return (
     <nav className="flex gap-5 py-5 justify-between items-center">
@@ -14,7 +23,7 @@ export async function Navbar() {
         <Button variant="ghost" asChild>
           <Link href="/">Home</Link>
         </Button>
-        {categoriesData.map((category) => (
+        {categoriesData?.map((category) => (
           <Button variant="ghost" asChild key={category.id}>
             <Link href={`/categories/${category.id}`}>{category.name}</Link>
           </Button>

@@ -6,6 +6,7 @@ import { Inter } from "next/font/google";
 import { Navbar } from "@/app/_components/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
+import { TRPCProvider } from "./_trpc/Provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,8 +29,10 @@ export default async function Layout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar />
-          {children}
+          <TRPCProvider>
+            <Navbar />
+            {children}
+          </TRPCProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,16 +1,23 @@
 import { DB } from "..";
-import { user, UserSchema } from "../schema/user";
+import { user } from "../schema/user";
 import { faker } from "@faker-js/faker";
 
 const mock = () => {
-  const data: Omit<Extract<UserSchema, { mode: "signUp" }>, "mode">[] = [];
+  const data: Array<{
+    id: string;
+    name: string;
+    email: string;
+    age: number;
+  }> = [];
 
-  Array.from({ length: 20 }, (_) => {
+  Array.from({ length: 20 }, () => {
     data.push({
-      fullName: faker.person.fullName(),
-      password: faker.internet.password({ memorable: true, length: 4 }),
-      age: faker.number.int({ min: 18, max: 99 }),
+      id: faker.string.uuid(), // Generate a unique ID for each user
+      name: faker.person.fullName(), // Use 'name' to match schema
       email: faker.internet.email(),
+      age: faker.number.int({ min: 18, max: 99 }),
+      // emailVerified, createdAt, updatedAt have defaults in the schema
+      // image is optional so we can omit it
     });
   });
 
